@@ -4,6 +4,6 @@
   "description": "VibeCode waitlist landing page",
   "private": true,
   "engines": {
-    "node": "18.x"
+    "node": "24.x"
   }
 }
