@@ -96,7 +96,7 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Ayo from VibeCode <onboarding@resend.dev>',
+        from: 'Ayo from VibeCode <hello@ayocreativedesigns.com>',
         to: normalizedEmail,
         subject: "You're on the VibeCode waitlist 🚀",
         html: `
