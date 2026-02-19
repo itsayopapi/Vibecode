@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VibeCode — Code Without Fear</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&family=Fraunces:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #080810;
+  --surface: #0f0f1a;
+  --card: #11111e;
+  --border: rgba(255,255,255,0.07);
+  --lime: #c6f135;
+  --lime-glow: rgba(198,241,53,0.15);
+  --blue: #4d9fff;
+  --pink: #ff4d9f;
+  --orange: #ff8c42;
+  --text: #f0f0f8;
+  --muted: #6b6b85;
+  --muted2: #9999b0;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* noise */
+body::after {
+  content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+}
+
+/* ── PAGE SYSTEM ── */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.1rem 2.5rem;
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(24px);
+  background: rgba(8,8,16,0.7);
+}
+.logo {
+  font-size: 1.35rem; font-weight: 800; letter-spacing: -0.03em;
+  color: var(--text); cursor: pointer; text-decoration: none;
+}
+.logo em { color: var(--lime); font-style: normal; }
+.nav-links { display: flex; gap: 0.2rem; list-style: none; }
+.nav-links a {
+  text-decoration: none; color: var(--muted); font-size: 0.875rem;
+  padding: 0.4rem 0.9rem; border-radius: 8px;
+  transition: color 0.2s, background 0.2s; cursor: pointer;
+}
+.nav-links a:hover, .nav-links a.active { color: var(--text); background: rgba(255,255,255,0.06); }
+.nav-cta {
+  background: var(--lime); color: #080810;
+  padding: 0.55rem 1.4rem; border-radius: 100px;
+  font-weight: 700; font-size: 0.85rem; cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s; border: none;
+}
+.nav-cta:hover { transform: scale(1.04); box-shadow: 0 0 30px rgba(198,241,53,0.3); }
+
+/* ── SHARED COMPONENTS ── */
+.orb {
+  position: absolute; border-radius: 50%;
+  filter: blur(90px); pointer-events: none; z-index: 0;
+}
+.section-wrap { max-width: 1140px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 1; }
+.section-label {
+  font-family: 'DM Mono', monospace; font-size: 0.72rem;
+  color: var(--lime); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.8rem;
+}
+.section-title {
+  font-size: clamp(2rem, 4.5vw, 3.2rem);
+  font-weight: 800; letter-spacing: -0.03em; line-height: 1.05;
+}
+.section-sub {
+  font-family: 'DM Mono', monospace; font-size: 0.95rem;
+  color: var(--muted2); line-height: 1.7; margin-top: 1rem; max-width: 52ch;
+}
+.btn-primary {
+  display: inline-block; background: var(--lime); color: #080810;
+  padding: 0.85rem 2rem; border-radius: 100px;
+  font-weight: 800; font-size: 0.95rem; cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s; border: none; text-decoration: none;
+  box-shadow: 0 0 30px rgba(198,241,53,0.2);
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 50px rgba(198,241,53,0.35); }
+.btn-ghost {
+  display: inline-block; background: transparent; color: var(--text);
+  padding: 0.85rem 2rem; border-radius: 100px;
+  font-weight: 600; font-size: 0.95rem; cursor: pointer;
+  transition: background 0.2s, border-color 0.2s; border: 1px solid var(--border); text-decoration: none;
+}
+.btn-ghost:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.15); }
+.reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.reveal.visible { opacity: 1; transform: none; }
+
+/* ── FOOTER ── */
+footer {
+  position: relative; z-index: 1;
+  border-top: 1px solid var(--border);
+  padding: 3rem 2.5rem 2rem;
+}
+.footer-inner {
+  max-width: 1140px; margin: 0 auto;
+  display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem;
+}
+.footer-brand .logo { font-size: 1.2rem; display: block; margin-bottom: 0.8rem; }
+.footer-brand p { font-family: 'DM Mono', monospace; font-size: 0.8rem; color: var(--muted); line-height: 1.6; max-width: 26ch; }
+.footer-col h4 { font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
+.footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; }
+.footer-col ul a { font-size: 0.85rem; color: var(--muted2); text-decoration: none; cursor: pointer; transition: color 0.2s; }
+.footer-col ul a:hover { color: var(--text); }
+.footer-bottom {
+  max-width: 1140px; margin: 2rem auto 0;
+  padding-top: 1.5rem; border-top: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;
+  font-family: 'DM Mono', monospace; font-size: 0.75rem; color: var(--muted);
+}
+
+/* ══════════════════════════════════════
+   PAGE: HOME
+══════════════════════════════════════ */
+#page-home .hero {
+  position: relative; min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; text-align: center;
+  padding: 9rem 2rem 5rem; overflow: hidden;
+}
+#page-home .orb-1 { width:700px;height:700px;background:rgba(198,241,53,0.06);top:-200px;left:-250px; animation: float 14s ease-in-out infinite alternate; }
+#page-home .orb-2 { width:500px;height:500px;background:rgba(77,159,255,0.07);bottom:-100px;right:-150px; animation: float 18s ease-in-out infinite alternate-reverse; }
+#page-home .orb-3 { width:350px;height:350px;background:rgba(255,77,159,0.05);top:50%;left:50%;transform:translate(-50%,-50%); animation: float 11s ease-in-out infinite alternate; }
+@keyframes float { from{transform:translate(0,0)} to{transform:translate(40px,30px)} }
+
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  border: 1px solid rgba(198,241,53,0.25); background: rgba(198,241,53,0.05);
+  color: var(--lime); font-size: 0.75rem; font-weight: 600;
+  padding: 0.4rem 1.1rem; border-radius: 100px; margin-bottom: 2rem;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  animation: fadeUp 0.8s ease both;
+}
+.hero-badge::before { content:'●'; font-size:0.5rem; animation:pulse 1.8s ease infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.15} }
+
+#page-home h1 {
+  font-size: clamp(3.2rem, 9vw, 7.5rem);
+  font-weight: 800; letter-spacing: -0.045em; line-height: 0.93;
+  max-width: 12ch; animation: fadeUp 0.9s 0.1s ease both;
+}
+#page-home h1 .accent { color: var(--lime); }
+#page-home h1 .ghost { -webkit-text-stroke: 1.5px rgba(240,240,248,0.25); color: transparent; }
+
+.hero-sub {
+  margin-top: 2rem; font-family: 'DM Mono', monospace; font-weight: 300;
+  font-size: clamp(0.9rem, 1.8vw, 1.1rem); color: var(--muted2);
+  max-width: 48ch; line-height: 1.7;
+  animation: fadeUp 1s 0.2s ease both;
+}
+.hero-actions {
+  margin-top: 2.5rem; display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;
+  animation: fadeUp 1s 0.3s ease both;
+}
+.hero-scroll {
+  margin-top: 4rem; display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
+  color: var(--muted); font-family: 'DM Mono', monospace; font-size: 0.7rem; letter-spacing: 0.1em;
+  animation: fadeUp 1s 0.6s ease both;
+}
+.scroll-line { width: 1px; height: 40px; background: linear-gradient(to bottom, var(--lime), transparent); animation: scrollDown 2s ease infinite; }
+@keyframes scrollDown { 0%{transform:scaleY(0);transform-origin:top} 50%{transform:scaleY(1);transform-origin:top} 51%{transform-origin:bottom} 100%{transform:scaleY(0);transform-origin:bottom} }
+
+/* stats bar */
+.stats-bar {
+  padding: 2rem 2.5rem;
+  border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  display: flex; justify-content: center; gap: 4rem; flex-wrap: wrap;
+  position: relative; z-index: 1;
+}
+.stat-item { text-align: center; }
+.stat-num { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.04em; }
+.stat-num span { color: var(--lime); }
+.stat-label { font-family: 'DM Mono', monospace; font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem; letter-spacing: 0.05em; }
+
+/* ide preview */
+.ide-wrap { padding: 5rem 2rem; display: flex; justify-content: center; position: relative; z-index: 1; }
+.ide-window {
+  width: 100%; max-width: 960px; background: var(--card);
+  border: 1px solid var(--border); border-radius: 16px; overflow: hidden;
+  box-shadow: 0 60px 140px rgba(0,0,0,0.6), 0 0 0 1px rgba(198,241,53,0.05), 0 0 80px rgba(198,241,53,0.04);
+}
+.ide-bar {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.8rem 1.2rem; background: rgba(0,0,0,0.35);
+  border-bottom: 1px solid var(--border);
+}
+.dot { width:12px; height:12px; border-radius:50%; }
+.dot-r{background:#ff5f57} .dot-y{background:#febc2e} .dot-g{background:#28c840}
+.ide-tabs { display:flex; gap:0; margin-left:0.8rem; }
+.itab { padding:0.2rem 1rem; font-size:0.72rem; color:var(--muted); border-right:1px solid var(--border); font-family:'DM Mono',monospace; }
+.itab.on { color:var(--text); background:rgba(255,255,255,0.04); }
+.ide-body { display:grid; grid-template-columns:190px 1fr; }
+.ide-side { border-right:1px solid var(--border); padding:1rem 0; font-family:'DM Mono',monospace; font-size:0.72rem; }
+.ide-side-title { padding:0 1rem 0.4rem; color:var(--muted); font-size:0.62rem; text-transform:uppercase; letter-spacing:0.1em; }
+.fitem { padding:0.28rem 1rem; color:var(--muted); display:flex; align-items:center; gap:0.4rem; cursor:pointer; transition:background 0.15s, color 0.15s; }
+.fitem:hover { background:rgba(255,255,255,0.04); color:var(--text); }
+.fitem.on { background:rgba(198,241,53,0.07); color:var(--lime); }
+.ide-code { padding:1.5rem; font-family:'DM Mono',monospace; font-size:0.78rem; line-height:1.75; overflow-x:auto; }
+.cl { display:flex; gap:1rem; }
+.ln { color:#2e2e48; min-width:1.5rem; text-align:right; user-select:none; }
+.kw{color:#c792ea} .fn{color:var(--blue)} .st{color:var(--lime)} .cm{color:#3d3d5c;font-style:italic} .op{color:var(--pink)} .nm{color:var(--orange)}
+.cursor { display:inline-block; width:2px; height:1em; background:var(--lime); vertical-align:text-bottom; animation:blink 1s step-end infinite; }
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.ide-footer { display:flex; align-items:center; gap:1rem; padding:0.45rem 1rem; border-top:1px solid var(--border); background:rgba(198,241,53,0.03); font-family:'DM Mono',monospace; font-size:0.68rem; color:var(--muted); }
+.ide-status{color:var(--lime)} .ai-tag{margin-left:auto;background:rgba(198,241,53,0.09);color:var(--lime);padding:0.2rem 0.7rem;border-radius:100px;font-size:0.62rem;font-weight:700;letter-spacing:0.05em;border:1px solid rgba(198,241,53,0.18);}
+
+/* home features strip */
+.home-features { padding: 6rem 0; position: relative; z-index: 1; }
+.hf-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 16px; overflow: hidden;
+  margin-top: 3.5rem;
+}
+.hf-card {
+  background: var(--card); padding: 2.5rem;
+  transition: background 0.3s; position: relative; overflow: hidden;
+}
+.hf-card::after { content:''; position:absolute; inset:0; background:radial-gradient(circle at 0 0, rgba(198,241,53,0.04) 0%, transparent 60%); opacity:0; transition:opacity 0.3s; }
+.hf-card:hover { background: #141420; }
+.hf-card:hover::after { opacity:1; }
+.hf-icon { font-size:1.8rem; margin-bottom:1.2rem; }
+.hf-title { font-size:1.05rem; font-weight:700; margin-bottom:0.5rem; }
+.hf-desc { font-family:'DM Mono',monospace; font-size:0.82rem; color:var(--muted2); line-height:1.65; }
+
+/* testimonials */
+.testimonials { padding: 6rem 0; position:relative; z-index:1; }
+.testi-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-top:3.5rem; }
+.testi-card {
+  background:var(--card); border:1px solid var(--border); border-radius:14px; padding:1.8rem;
+  transition: border-color 0.3s, transform 0.3s;
+}
+.testi-card:hover { border-color:rgba(198,241,53,0.15); transform:translateY(-3px); }
+.testi-stars { color:var(--lime); font-size:0.75rem; letter-spacing:0.1em; margin-bottom:1rem; }
+.testi-quote { font-family:'Fraunces',serif; font-style:italic; font-size:1rem; line-height:1.6; color:var(--text); margin-bottom:1.2rem; }
+.testi-author { display:flex; align-items:center; gap:0.7rem; }
+.testi-avatar { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:700; }
+.testi-name { font-size:0.85rem; font-weight:700; }
+.testi-role { font-size:0.72rem; color:var(--muted); font-family:'DM Mono',monospace; }
+
+/* home cta */
+.home-cta {
+  padding: 8rem 2rem; text-align:center; position:relative; z-index:1; overflow:hidden;
+}
+.home-cta::before {
+  content:''; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  width:700px; height:500px;
+  background:radial-gradient(ellipse, rgba(198,241,53,0.07) 0%, transparent 70%);
+  pointer-events:none;
+}
+.cta-h { font-size:clamp(2.5rem,6vw,5rem); font-weight:800; letter-spacing:-0.04em; line-height:1; margin-bottom:1.2rem; }
+.cta-sub { font-family:'DM Mono',monospace; color:var(--muted2); font-size:0.95rem; margin-bottom:2.5rem; }
+.email-row { display:flex; gap:0.5rem; max-width:420px; margin:0 auto; flex-wrap:wrap; justify-content:center; }
+.email-in {
+  flex:1; min-width:220px; background:var(--card); border:1px solid var(--border);
+  color:var(--text); padding:0.85rem 1.3rem; border-radius:100px;
+  font-family:'DM Mono',monospace; font-size:0.88rem; outline:none; transition:border-color 0.2s;
+}
+.email-in:focus { border-color:rgba(198,241,53,0.35); }
+.email-in::placeholder { color:var(--muted); }
+
+/* ══════════════════════════════════════
+   PAGE: FEATURES
+══════════════════════════════════════ */
+#page-features .page-hero {
+  padding: 10rem 2rem 6rem; position:relative; overflow:hidden;
+}
+#page-features .orb-1 { width:600px;height:600px;background:rgba(77,159,255,0.07);top:-100px;right:-200px; }
+#page-features .orb-2 { width:400px;height:400px;background:rgba(198,241,53,0.06);bottom:0;left:-100px; }
+
+.feat-main-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6rem; align-items: center;
+  padding: 6rem 0;
+}
+.feat-main-grid.reverse { direction: rtl; }
+.feat-main-grid.reverse > * { direction: ltr; }
+.feat-visual {
+  background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+  padding: 2rem; min-height: 280px; display:flex; flex-direction:column; gap:1rem;
+  position:relative; overflow:hidden;
+}
+.feat-visual::before { content:''; position:absolute; inset:0; background:radial-gradient(circle at 80% 20%, rgba(198,241,53,0.05), transparent 60%); }
+.feat-tag { display:inline-block; font-size:0.68rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; padding:0.3rem 0.8rem; border-radius:100px; margin-bottom:0.5rem; }
+.feat-tag.t1 { background:rgba(198,241,53,0.1); color:var(--lime); border:1px solid rgba(198,241,53,0.2); }
+.feat-tag.t2 { background:rgba(77,159,255,0.1); color:var(--blue); border:1px solid rgba(77,159,255,0.2); }
+.feat-tag.t3 { background:rgba(255,77,159,0.1); color:var(--pink); border:1px solid rgba(255,77,159,0.2); }
+.feat-tag.t4 { background:rgba(255,140,66,0.1); color:var(--orange); border:1px solid rgba(255,140,66,0.2); }
+
+.feat-text h3 { font-size:clamp(1.6rem,3vw,2.2rem); font-weight:800; letter-spacing:-0.03em; margin-bottom:1rem; }
+.feat-text p { font-family:'DM Mono',monospace; font-size:0.88rem; color:var(--muted2); line-height:1.75; }
+.feat-list { margin-top:1.5rem; display:flex; flex-direction:column; gap:0.6rem; }
+.feat-list li { font-family:'DM Mono',monospace; font-size:0.82rem; color:var(--muted2); display:flex; align-items:flex-start; gap:0.6rem; list-style:none; }
+.feat-list li::before { content:'→'; color:var(--lime); flex-shrink:0; margin-top:0.1rem; }
+
+/* ai chat mock */
+.ai-chat { display:flex; flex-direction:column; gap:0.8rem; }
+.ai-msg { display:flex; gap:0.8rem; align-items:flex-start; }
+.ai-msg.user { flex-direction:row-reverse; }
+.ai-avatar { width:28px; height:28px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:0.65rem; font-weight:700; }
+.ai-av-bot { background:rgba(198,241,53,0.15); color:var(--lime); border:1px solid rgba(198,241,53,0.2); }
+.ai-av-usr { background:rgba(77,159,255,0.15); color:var(--blue); border:1px solid rgba(77,159,255,0.2); }
+.ai-bubble { font-family:'DM Mono',monospace; font-size:0.75rem; line-height:1.55; padding:0.7rem 1rem; border-radius:12px; max-width:80%; }
+.ai-bubble.bot { background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--text); border-radius:12px 12px 12px 2px; }
+.ai-bubble.usr { background:rgba(77,159,255,0.1); border:1px solid rgba(77,159,255,0.2); color:var(--blue); border-radius:12px 12px 2px 12px; }
+
+/* learning path mock */
+.path-steps { display:flex; flex-direction:column; gap:0; }
+.path-step { display:flex; gap:1rem; align-items:flex-start; padding:0.8rem 0; position:relative; }
+.path-step::before { content:''; position:absolute; left:14px; top:32px; width:1px; height:calc(100% - 12px); background:var(--border); }
+.path-step:last-child::before { display:none; }
+.path-dot { width:28px; height:28px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:0.65rem; font-weight:700; margin-top:2px; }
+.path-dot.done { background:var(--lime); color:#080810; }
+.path-dot.curr { background:rgba(198,241,53,0.15); color:var(--lime); border:2px solid var(--lime); }
+.path-dot.todo { background:rgba(255,255,255,0.05); color:var(--muted); border:1px solid var(--border); }
+.path-info h5 { font-size:0.82rem; font-weight:700; margin-bottom:0.2rem; }
+.path-info p { font-family:'DM Mono',monospace; font-size:0.7rem; color:var(--muted); }
+.path-badge { font-family:'DM Mono',monospace; font-size:0.62rem; }
+.path-badge.done { color:var(--lime); } .path-badge.curr { color:var(--blue); }
+
+/* deploy mock */
+.deploy-mock { display:flex; flex-direction:column; gap:0.8rem; font-family:'DM Mono',monospace; font-size:0.75rem; }
+.deploy-row { display:flex; align-items:center; gap:0.7rem; padding:0.6rem 0.8rem; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; }
+.deploy-icon { font-size:0.9rem; }
+.deploy-text { flex:1; color:var(--muted2); }
+.deploy-status { font-size:0.65rem; font-weight:700; padding:0.2rem 0.6rem; border-radius:100px; }
+.ds-done { background:rgba(198,241,53,0.1); color:var(--lime); }
+.ds-run { background:rgba(77,159,255,0.1); color:var(--blue); }
+.ds-wait { background:rgba(255,255,255,0.05); color:var(--muted); }
+.deploy-url { padding:0.8rem; background:rgba(198,241,53,0.05); border:1px solid rgba(198,241,53,0.15); border-radius:8px; color:var(--lime); font-size:0.78rem; text-align:center; }
+
+/* collab mock */
+.collab-mock { display:flex; flex-direction:column; gap:1rem; }
+.collab-avatars { display:flex; gap:0.3rem; align-items:center; }
+.collab-av { width:32px; height:32px; border-radius:50%; border:2px solid var(--bg); display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:700; margin-left:-8px; }
+.collab-av:first-child { margin-left:0; }
+.collab-status { font-family:'DM Mono',monospace; font-size:0.7rem; color:var(--muted); }
+.collab-status em { color:var(--lime); font-style:normal; }
+.collab-cursors { position:relative; height:80px; background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+.ccursor { position:absolute; display:flex; align-items:center; gap:0.3rem; font-family:'DM Mono',monospace; font-size:0.62rem; font-weight:700; padding:0.2rem 0.5rem; border-radius:4px; animation:drift2 3s ease-in-out infinite alternate; }
+@keyframes drift2 { from{transform:translate(0,0)} to{transform:translate(8px,5px)} }
+.ccursor.c1 { background:rgba(198,241,53,0.15); color:var(--lime); top:20%; left:15%; }
+.ccursor.c2 { background:rgba(77,159,255,0.15); color:var(--blue); top:55%; left:45%; animation-direction:alternate-reverse; }
+.ccursor.c3 { background:rgba(255,77,159,0.15); color:var(--pink); top:30%; left:65%; }
+
+/* all features grid */
+.all-features { padding: 6rem 0; position:relative; z-index:1; background:linear-gradient(180deg, transparent, rgba(198,241,53,0.02), transparent); }
+.af-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--border); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-top:3rem; }
+.af-card { background:var(--card); padding:2rem; transition:background 0.25s; }
+.af-card:hover { background:#141420; }
+.af-emoji { font-size:1.5rem; margin-bottom:0.8rem; }
+.af-name { font-size:0.95rem; font-weight:700; margin-bottom:0.4rem; }
+.af-desc { font-family:'DM Mono',monospace; font-size:0.78rem; color:var(--muted); line-height:1.6; }
+
+/* ══════════════════════════════════════
+   PAGE: PRICING
+══════════════════════════════════════ */
+#page-pricing .page-hero { padding: 10rem 2rem 5rem; text-align:center; position:relative; overflow:hidden; }
+#page-pricing .orb-1 { width:500px;height:500px;background:rgba(255,77,159,0.06);top:-50px;left:-100px; }
+#page-pricing .orb-2 { width:500px;height:500px;background:rgba(198,241,53,0.06);top:-50px;right:-100px; }
+
+.pricing-toggle { display:flex; align-items:center; gap:1rem; justify-content:center; margin:2rem 0 4rem; }
+.toggle-label { font-family:'DM Mono',monospace; font-size:0.82rem; color:var(--muted); }
+.toggle-label.active { color:var(--text); }
+.toggle-switch {
+  position:relative; width:52px; height:28px; background:rgba(255,255,255,0.08);
+  border:1px solid var(--border); border-radius:100px; cursor:pointer; transition:background 0.3s;
+}
+.toggle-switch.on { background:rgba(198,241,53,0.2); border-color:rgba(198,241,53,0.3); }
+.toggle-thumb { position:absolute; top:3px; left:3px; width:20px; height:20px; background:var(--muted); border-radius:50%; transition:transform 0.3s, background 0.3s; }
+.toggle-switch.on .toggle-thumb { transform:translateX(24px); background:var(--lime); }
+.save-badge { background:rgba(198,241,53,0.1); color:var(--lime); font-family:'DM Mono',monospace; font-size:0.68rem; font-weight:700; padding:0.25rem 0.6rem; border-radius:100px; border:1px solid rgba(198,241,53,0.2); }
+
+.pricing-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-top:0; position:relative; z-index:1; }
+.pricing-card {
+  background:var(--card); border:1px solid var(--border); border-radius:20px; padding:2.5rem;
+  position:relative; overflow:hidden; transition:transform 0.3s, border-color 0.3s;
+}
+.pricing-card:hover { transform:translateY(-4px); }
+.pricing-card.featured {
+  border-color: rgba(198,241,53,0.3); background: #111a0d;
+  box-shadow: 0 0 60px rgba(198,241,53,0.08);
+}
+.featured-badge {
+  position:absolute; top:0; right:0;
+  background:var(--lime); color:#080810;
+  font-size:0.65rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase;
+  padding:0.35rem 1rem; border-radius:0 20px 0 12px;
+}
+.plan-name { font-size:0.8rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:1rem; }
+.plan-price { display:flex; align-items:flex-end; gap:0.2rem; margin-bottom:0.3rem; }
+.plan-amount { font-size:3.5rem; font-weight:800; letter-spacing:-0.04em; line-height:1; }
+.plan-currency { font-size:1.5rem; font-weight:600; align-self:flex-start; margin-top:0.5rem; color:var(--muted2); }
+.plan-period { font-family:'DM Mono',monospace; font-size:0.75rem; color:var(--muted); margin-bottom:1.5rem; }
+.plan-desc { font-family:'DM Mono',monospace; font-size:0.82rem; color:var(--muted2); line-height:1.6; margin-bottom:2rem; padding-bottom:2rem; border-bottom:1px solid var(--border); }
+.plan-features { display:flex; flex-direction:column; gap:0.75rem; margin-bottom:2rem; }
+.pf-item { display:flex; align-items:flex-start; gap:0.6rem; font-family:'DM Mono',monospace; font-size:0.8rem; color:var(--muted2); }
+.pf-check { color:var(--lime); flex-shrink:0; margin-top:0.05rem; }
+.pf-x { color:var(--muted); flex-shrink:0; }
+.plan-btn { width:100%; padding:0.9rem; border-radius:100px; font-weight:700; font-size:0.9rem; cursor:pointer; border:none; transition:all 0.2s; }
+.plan-btn-primary { background:var(--lime); color:#080810; }
+.plan-btn-primary:hover { box-shadow:0 0 30px rgba(198,241,53,0.3); }
+.plan-btn-ghost { background:transparent; color:var(--text); border:1px solid var(--border); }
+.plan-btn-ghost:hover { background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.15); }
+
+.pricing-faq { padding:6rem 0; position:relative; z-index:1; }
+.faq-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-top:3rem; }
+.faq-item { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:1.8rem; cursor:pointer; transition:border-color 0.2s; }
+.faq-item:hover { border-color:rgba(198,241,53,0.2); }
+.faq-q { font-size:0.95rem; font-weight:700; margin-bottom:0.8rem; display:flex; justify-content:space-between; align-items:center; gap:1rem; }
+.faq-q::after { content:'+'; color:var(--lime); font-size:1.2rem; flex-shrink:0; }
+.faq-a { font-family:'DM Mono',monospace; font-size:0.82rem; color:var(--muted2); line-height:1.65; }
+
+/* ══════════════════════════════════════
+   PAGE: ABOUT / FOUNDER
+══════════════════════════════════════ */
+#page-about .page-hero {
+  padding: 10rem 2rem 4rem; position:relative; overflow:hidden;
+}
+#page-about .orb-1 { width:500px;height:500px;background:rgba(255,140,66,0.06);top:-100px;right:-100px; }
+#page-about .orb-2 { width:400px;height:400px;background:rgba(198,241,53,0.05);bottom:0;left:-80px; }
+
+/* founder spotlight */
+.founder-section { padding: 0 2rem 6rem; }
+.founder-wrap { max-width:1140px; margin:0 auto; display:grid; grid-template-columns:340px 1fr; gap:5rem; align-items:start; }
+.founder-card {
+  background:var(--card); border:1px solid var(--border); border-radius:20px; padding:2.5rem; text-align:center;
+  position:sticky; top:7rem;
+}
+.founder-avatar {
+  width:120px; height:120px; border-radius:50%; margin:0 auto 1.5rem;
+  background:linear-gradient(135deg, var(--lime) 0%, rgba(198,241,53,0.3) 100%);
+  display:flex; align-items:center; justify-content:center;
+  font-size:3rem; font-weight:800; color:#080810;
+  border:3px solid rgba(198,241,53,0.3);
+  box-shadow: 0 0 40px rgba(198,241,53,0.15);
+}
+.founder-name { font-size:1.8rem; font-weight:800; letter-spacing:-0.02em; margin-bottom:0.3rem; }
+.founder-title { font-family:'DM Mono',monospace; font-size:0.78rem; color:var(--lime); margin-bottom:1.2rem; }
+.founder-bio-short { font-family:'DM Mono',monospace; font-size:0.8rem; color:var(--muted2); line-height:1.6; margin-bottom:1.5rem; }
+.founder-links { display:flex; gap:0.8rem; justify-content:center; flex-wrap:wrap; }
+.founder-link { display:flex; align-items:center; gap:0.4rem; font-family:'DM Mono',monospace; font-size:0.72rem; color:var(--muted); text-decoration:none; padding:0.4rem 0.9rem; border:1px solid var(--border); border-radius:100px; transition:all 0.2s; cursor:pointer; }
+.founder-link:hover { color:var(--lime); border-color:rgba(198,241,53,0.3); }
+
+.founder-story { display:flex; flex-direction:column; gap:2.5rem; }
+.story-block { position:relative; }
+.story-block h3 { font-size:1.4rem; font-weight:800; letter-spacing:-0.02em; margin-bottom:1rem; }
+.story-block p { font-family:'Fraunces',serif; font-size:1.05rem; color:var(--muted2); line-height:1.8; }
+.story-block p + p { margin-top:1rem; }
+.story-block .pull-quote {
+  font-family:'Fraunces',serif; font-style:italic; font-size:1.4rem; font-weight:700;
+  color:var(--text); line-height:1.4; padding:1.5rem 0; border-top:2px solid var(--lime);
+  border-bottom:2px solid var(--lime); margin:1.5rem 0;
+}
+.story-year { font-family:'DM Mono',monospace; font-size:0.7rem; color:var(--lime); letter-spacing:0.12em; text-transform:uppercase; margin-bottom:0.6rem; }
+
+/* values */
+.values-section { padding:6rem 2rem; background:linear-gradient(180deg,transparent,rgba(198,241,53,0.02),transparent); }
+.values-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-top:3rem; }
+.value-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:2rem; transition:border-color 0.3s, transform 0.3s; }
+.value-card:hover { border-color:rgba(198,241,53,0.2); transform:translateY(-3px); }
+.value-num { font-size:3rem; font-weight:800; letter-spacing:-0.04em; color:rgba(198,241,53,0.15); line-height:1; margin-bottom:0.8rem; }
+.value-title { font-size:1.05rem; font-weight:700; margin-bottom:0.5rem; }
+.value-desc { font-family:'DM Mono',monospace; font-size:0.82rem; color:var(--muted2); line-height:1.65; }
+
+/* timeline */
+.timeline-section { padding:6rem 2rem; }
+.timeline { max-width:600px; margin:3rem auto 0; position:relative; }
+.timeline::before { content:''; position:absolute; left:20px; top:0; bottom:0; width:1px; background:var(--border); }
+.tl-item { display:flex; gap:1.5rem; margin-bottom:2.5rem; position:relative; }
+.tl-dot { width:40px; height:40px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:700; z-index:1; border:2px solid var(--bg); }
+.tl-dot.done { background:var(--lime); color:#080810; }
+.tl-dot.next { background:rgba(198,241,53,0.1); color:var(--lime); border-color:rgba(198,241,53,0.3); border-style:dashed; }
+.tl-content h4 { font-size:1rem; font-weight:700; margin-bottom:0.3rem; }
+.tl-content p { font-family:'DM Mono',monospace; font-size:0.78rem; color:var(--muted); line-height:1.6; }
+.tl-date { font-family:'DM Mono',monospace; font-size:0.68rem; color:var(--lime); margin-bottom:0.3rem; }
+
+/* ══════════════════════════════════════
+   PAGE: COMMUNITY
+══════════════════════════════════════ */
+#page-community .page-hero { padding:10rem 2rem 5rem; position:relative; overflow:hidden; }
+#page-community .orb-1 { width:600px;height:600px;background:rgba(77,159,255,0.07);top:-150px;left:-150px; }
+#page-community .orb-2 { width:400px;height:400px;background:rgba(255,77,159,0.06);bottom:-50px;right:-100px; }
+
+.community-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; margin:4rem 0; }
+.cs-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:1.8rem; text-align:center; transition:border-color 0.3s; }
+.cs-card:hover { border-color:rgba(198,241,53,0.2); }
+.cs-num { font-size:2.5rem; font-weight:800; letter-spacing:-0.04em; margin-bottom:0.3rem; }
+.cs-num em { color:var(--lime); font-style:normal; }
+.cs-label { font-family:'DM Mono',monospace; font-size:0.72rem; color:var(--muted); }
+
+/* channels */
+.channels-section { padding:6rem 0; }
+.channels-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-top:3rem; }
+.channel-card {
+  background:var(--card); border:1px solid var(--border); border-radius:16px; padding:2rem;
+  transition: border-color 0.3s, transform 0.3s;
+}
+.channel-card:hover { border-color:rgba(198,241,53,0.2); transform:translateY(-3px); }
+.ch-icon { font-size:2rem; margin-bottom:1rem; }
+.ch-name { font-size:1.05rem; font-weight:700; margin-bottom:0.4rem; }
+.ch-desc { font-family:'DM Mono',monospace; font-size:0.8rem; color:var(--muted2); line-height:1.6; margin-bottom:1.2rem; }
+.ch-count { font-family:'DM Mono',monospace; font-size:0.72rem; color:var(--muted); }
+.ch-count em { color:var(--lime); font-style:normal; }
+
+/* showcase */
+.showcase-section { padding:6rem 0; background:linear-gradient(180deg,transparent,rgba(77,159,255,0.02),transparent); }
+.showcase-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-top:3rem; }
+.showcase-card { background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden; transition:border-color 0.3s, transform 0.3s; }
+.showcase-card:hover { border-color:rgba(198,241,53,0.2); transform:translateY(-3px); }
+.sc-preview { height:140px; display:flex; align-items:center; justify-content:center; font-size:2.5rem; }
+.sc-info { padding:1.2rem; }
+.sc-title { font-size:0.95rem; font-weight:700; margin-bottom:0.2rem; }
+.sc-author { font-family:'DM Mono',monospace; font-size:0.72rem; color:var(--muted); margin-bottom:0.8rem; }
+.sc-tags { display:flex; gap:0.4rem; flex-wrap:wrap; }
+.sc-tag { font-family:'DM Mono',monospace; font-size:0.62rem; padding:0.2rem 0.6rem; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:100px; color:var(--muted2); }
+
+/* events */
+.events-section { padding:6rem 0; }
+.events-list { display:flex; flex-direction:column; gap:1rem; margin-top:3rem; }
+.event-item { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:1.5rem 2rem; display:flex; align-items:center; gap:2rem; transition:border-color 0.3s; }
+.event-item:hover { border-color:rgba(198,241,53,0.2); }
+.event-date { text-align:center; min-width:50px; }
+.event-month { font-family:'DM Mono',monospace; font-size:0.65rem; color:var(--lime); text-transform:uppercase; letter-spacing:0.1em; }
+.event-day { font-size:1.8rem; font-weight:800; letter-spacing:-0.03em; line-height:1; }
+.event-info h4 { font-size:0.95rem; font-weight:700; margin-bottom:0.2rem; }
+.event-info p { font-family:'DM Mono',monospace; font-size:0.75rem; color:var(--muted); }
+.event-badge { margin-left:auto; }
+.ev-type { font-family:'DM Mono',monospace; font-size:0.65rem; font-weight:700; padding:0.3rem 0.8rem; border-radius:100px; }
+.ev-live { background:rgba(198,241,53,0.1); color:var(--lime); border:1px solid rgba(198,241,53,0.2); }
+.ev-rec  { background:rgba(77,159,255,0.1); color:var(--blue); border:1px solid rgba(77,159,255,0.2); }
+
+/* community join cta */
+.community-cta { padding:6rem 2rem; text-align:center; }
+
+/* ══════════════════════════════════════
+   ANIMATIONS
+══════════════════════════════════════ */
+@keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── RESPONSIVE ── */
+@media (max-width:900px) {
+  .feat-main-grid { grid-template-columns:1fr; gap:3rem; }
+  .feat-main-grid.reverse { direction:ltr; }
+  .pricing-grid { grid-template-columns:1fr; max-width:440px; margin:0 auto; }
+  .founder-wrap { grid-template-columns:1fr; }
+  .founder-card { position:static; }
+  .hf-grid { grid-template-columns:1fr; }
+  .testi-grid { grid-template-columns:1fr; }
+  .community-stats { grid-template-columns:repeat(2,1fr); }
+  .channels-grid { grid-template-columns:1fr 1fr; }
+  .showcase-grid { grid-template-columns:1fr 1fr; }
+  .values-grid { grid-template-columns:1fr; }
+  .faq-grid { grid-template-columns:1fr; }
+  .af-grid { grid-template-columns:repeat(2,1fr); }
+  .footer-inner { grid-template-columns:1fr 1fr; }
+}
+@media (max-width:600px) {
+  nav { padding:1rem 1.2rem; }
+  .nav-links { display:none; }
+  .channels-grid, .showcase-grid { grid-template-columns:1fr; }
+  .community-stats { grid-template-columns:1fr 1fr; }
+  .footer-inner { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <a class="logo" onclick="showPage('home')">vibe<em>code</em></a>
+  <ul class="nav-links">
+    <li><a onclick="showPage('home')" id="nav-home" class="active">Home</a></li>
+    <li><a onclick="showPage('features')" id="nav-features">Features</a></li>
+    <li><a onclick="showPage('pricing')" id="nav-pricing">Pricing</a></li>
+    <li><a onclick="showPage('about')" id="nav-about">About</a></li>
+    <li><a onclick="showPage('community')" id="nav-community">Community</a></li>
+  </ul>
+  <button class="nav-cta" onclick="showPage('pricing')">Start for free →</button>
+</nav>
+
+<!-- ══════════════════════════════════════
+     PAGE: HOME
+══════════════════════════════════════ -->
+<div class="page active" id="page-home">
+  <section class="hero">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="hero-badge">Now in beta &mdash; 2,400+ coders building</div>
+    <h1>Code the<br>way you<br><span class="accent">think.</span><br><span class="ghost">No fear.</span></h1>
+    <p class="hero-sub">A browser-based IDE built for beginners, career-switchers, and students. AI that actually explains things. Zero installs. Just open and build.</p>
+    <div class="hero-actions">
+      <button class="btn-primary" onclick="showPage('pricing')">Launch the IDE →</button>
+      <button class="btn-ghost" onclick="showPage('features')">See how it works</button>
+    </div>
+    <div class="hero-scroll">
+      <div class="scroll-line"></div>
+      <span>scroll</span>
+    </div>
+  </section>
+
+  <div class="stats-bar">
+    <div class="stat-item reveal">
+      <div class="stat-num"><span>2.4</span>k</div>
+      <div class="stat-label">Beta builders</div>
+    </div>
+    <div class="stat-item reveal">
+      <div class="stat-num"><span>0</span></div>
+      <div class="stat-label">Installs required</div>
+    </div>
+    <div class="stat-item reveal">
+      <div class="stat-num"><span>5</span> min</div>
+      <div class="stat-label">To first project</div>
+    </div>
+    <div class="stat-item reveal">
+      <div class="stat-num"><span>12</span>+</div>
+      <div class="stat-label">Languages supported</div>
+    </div>
+  </div>
+
+  <!-- IDE Preview -->
+  <div class="ide-wrap">
+    <div class="ide-window reveal">
+      <div class="ide-bar">
+        <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+        <div class="ide-tabs">
+          <div class="itab on">app.js</div>
+          <div class="itab">style.css</div>
+          <div class="itab">index.html</div>
+        </div>
+      </div>
+      <div class="ide-body">
+        <div class="ide-side">
+          <div class="ide-side-title">Explorer</div>
+          <div class="fitem" style="font-size:0.68rem">📁 my-first-app</div>
+          <div class="fitem on" style="padding-left:1.6rem">📄 app.js</div>
+          <div class="fitem" style="padding-left:1.6rem">📄 style.css</div>
+          <div class="fitem" style="padding-left:1.6rem">📄 index.html</div>
+          <div class="fitem" style="margin-top:0.4rem">📁 utils</div>
+        </div>
+        <div class="ide-code">
+          <div class="cl"><span class="ln">1</span><span class="cm">// ✨ AI set this up — ask me anything!</span></div>
+          <div class="cl"><span class="ln">2</span><span></span></div>
+          <div class="cl"><span class="ln">3</span><span><span class="kw">const</span> <span class="fn">greet</span> = <span class="op">(</span><span class="fn">name</span><span class="op">)</span> <span class="op">=></span> <span class="op">{</span></span></div>
+          <div class="cl"><span class="ln">4</span><span>&nbsp;&nbsp;<span class="kw">const</span> message <span class="op">=</span> <span class="st">`Hello, ${name}! Let's build something 🚀`</span></span></div>
+          <div class="cl"><span class="ln">5</span><span>&nbsp;&nbsp;<span class="fn">console</span><span class="op">.</span><span class="fn">log</span><span class="op">(</span>message<span class="op">)</span></span></div>
+          <div class="cl"><span class="ln">6</span><span>&nbsp;&nbsp;<span class="kw">return</span> message</span></div>
+          <div class="cl"><span class="ln">7</span><span><span class="op">}</span></span></div>
+          <div class="cl"><span class="ln">8</span><span></span></div>
+          <div class="cl"><span class="ln">9</span><span><span class="fn">greet</span><span class="op">(</span><span class="st">"future developer"</span><span class="op">)</span><span class="cursor"></span></span></div>
+        </div>
+      </div>
+      <div class="ide-footer">
+        <span class="ide-status">● Running</span>
+        <span>JavaScript</span>
+        <span>Ln 9, Col 34</span>
+        <div class="ai-tag">⚡ AI Assistant Active</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Home Features -->
+  <section class="home-features">
+    <div class="section-wrap">
+      <div class="section-label reveal">Why VibeCode</div>
+      <h2 class="section-title reveal">Built different.<br>On purpose.</h2>
+      <div class="hf-grid reveal">
+        <div class="hf-card"><div class="hf-icon">⚡</div><div class="hf-title">Instant Browser IDE</div><div class="hf-desc">No installs, no config files, no frustration. Open a tab and you're already coding. Your environment is ready in seconds, every time.</div></div>
+        <div class="hf-card"><div class="hf-icon">🤖</div><div class="hf-title">AI That Teaches, Not Just Fixes</div><div class="hf-desc">Our AI walks you through *why* something broke — not just the fix. You actually learn instead of copy-pasting solutions you don't understand.</div></div>
+        <div class="hf-card"><div class="hf-icon">🗺️</div><div class="hf-title">Guided Learning Paths</div><div class="hf-desc">From "what is a variable" to shipping a real web app. Structured paths that adapt to your pace, not a generic YouTube playlist.</div></div>
+        <div class="hf-card"><div class="hf-icon">🚀</div><div class="hf-title">One-Click Deploy</div><div class="hf-desc">Share your project with a real URL in one click. No servers, no DevOps headaches. Just your work, live on the internet.</div></div>
+        <div class="hf-card"><div class="hf-icon">🎯</div><div class="hf-title">Project-Based Learning</div><div class="hf-desc">Build real things — portfolios, games, tools. Real projects teach you real skills. No more toy exercises that go nowhere.</div></div>
+        <div class="hf-card"><div class="hf-icon">👥</div><div class="hf-title">Community Built In</div><div class="hf-desc">You're not alone. Code with others in real time, get feedback on your work, and celebrate wins with people who get it.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="testimonials">
+    <div class="section-wrap">
+      <div class="section-label reveal">Early users</div>
+      <h2 class="section-title reveal">Real people. Real progress.</h2>
+      <div class="testi-grid">
+        <div class="testi-card reveal">
+          <div class="testi-stars">★★★★★</div>
+          <div class="testi-quote">"I tried learning to code three times before VibeCode. The AI actually explains things like a friend, not a textbook."</div>
+          <div class="testi-author">
+            <div class="testi-avatar" style="background:rgba(198,241,53,0.15);color:var(--lime)">M</div>
+            <div><div class="testi-name">Mia T.</div><div class="testi-role">Career switcher → Junior Dev</div></div>
+          </div>
+        </div>
+        <div class="testi-card reveal">
+          <div class="testi-stars">★★★★★</div>
+          <div class="testi-quote">"I built my first portfolio site in 2 weeks. Never thought I'd be able to say that. No setup issues, nothing to break."</div>
+          <div class="testi-author">
+            <div class="testi-avatar" style="background:rgba(77,159,255,0.15);color:var(--blue)">K</div>
+            <div><div class="testi-name">Kofi A.</div><div class="testi-role">Student, Age 19</div></div>
+          </div>
+        </div>
+        <div class="testi-card reveal">
+          <div class="testi-stars">★★★★★</div>
+          <div class="testi-quote">"Other platforms felt like they were designed for people who already knew how to code. This one actually starts from zero."</div>
+          <div class="testi-author">
+            <div class="testi-avatar" style="background:rgba(255,77,159,0.15);color:var(--pink)">S</div>
+            <div><div class="testi-name">Sara J.</div><div class="testi-role">Complete beginner</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Home CTA -->
+  <section class="home-cta">
+    <h2 class="cta-h reveal">Ready to start<br><span style="color:var(--lime)">building?</span></h2>
+    <p class="cta-sub reveal">Join the beta. First 500 users get lifetime Pro — free.</p>
+    <form class="email-row reveal" onsubmit="event.preventDefault(); this.innerHTML='<div style=\'color:var(--lime);font-family:DM Mono,monospace;padding:1rem\'>✓ You\'re on the list! We\'ll be in touch.</div>'">
+      <input class="email-in" type="email" placeholder="your@email.com" required>
+      <button type="submit" class="btn-primary">Join waitlist</button>
+    </form>
+  </section>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="logo">vibe<em style="color:var(--lime)">code</em></span>
+        <p>A platform built for anyone brave enough to start. Zero setup. Real learning. Real community.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <ul>
+          <li><a onclick="showPage('features')">Features</a></li>
+          <li><a onclick="showPage('pricing')">Pricing</a></li>
+          <li><a>Roadmap</a></li>
+          <li><a>Changelog</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a onclick="showPage('about')">About</a></li>
+          <li><a onclick="showPage('community')">Community</a></li>
+          <li><a>Blog</a></li>
+          <li><a>Careers</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a>Privacy</a></li>
+          <li><a>Terms</a></li>
+          <li><a>Cookies</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 VibeCode Inc. — Made for people brave enough to start.</span>
+      <span>Built by Ayo, with love.</span>
+    </div>
+  </footer>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE: FEATURES
+══════════════════════════════════════ -->
+<div class="page" id="page-features">
+  <div class="page-hero" style="position:relative;overflow:hidden">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="section-wrap">
+      <div class="section-label">Platform features</div>
+      <h1 class="section-title" style="max-width:16ch">Everything a beginner needs.<br>Nothing they don't.</h1>
+      <p class="section-sub">We stripped away everything intimidating about coding tools and kept what matters: a place to write, run, learn, and ship — all from your browser.</p>
+    </div>
+  </div>
+
+  <!-- Feature deep-dives -->
+  <div class="section-wrap" style="padding:4rem 2rem">
+
+    <!-- Feature 1: AI Assistant -->
+    <div class="feat-main-grid reveal">
+      <div class="feat-visual">
+        <div class="feat-tag t1">AI Assistant</div>
+        <div class="ai-chat">
+          <div class="ai-msg user">
+            <div class="ai-avatar ai-av-usr">You</div>
+            <div class="ai-bubble usr">why does my for loop keep going forever??</div>
+          </div>
+          <div class="ai-msg">
+            <div class="ai-avatar ai-av-bot">AI</div>
+            <div class="ai-bubble bot">Great question! Your loop runs forever because the condition <code style="color:var(--lime)">i > 0</code> is always true — i is growing, not shrinking. Try changing it to <code style="color:var(--lime)">i &lt; array.length</code>. Want me to explain why that works?</div>
+          </div>
+          <div class="ai-msg user">
+            <div class="ai-avatar ai-av-usr">You</div>
+            <div class="ai-bubble usr">yes please!</div>
+          </div>
+          <div class="ai-msg">
+            <div class="ai-avatar ai-av-bot">AI</div>
+            <div class="ai-bubble bot">Sure! Think of it like counting chairs at a table — you stop when you run out of chairs, not when the number gets big...</div>
+          </div>
+        </div>
+      </div>
+      <div class="feat-text">
+        <div class="feat-tag t1" style="margin-bottom:1.2rem">AI That Teaches</div>
+        <h3>An assistant that actually explains things</h3>
+        <p>Most AI tools just fix your code. Ours explains *why* it was broken, in plain English, using analogies that make sense to beginners. Because copying a fix you don't understand is just delaying the problem.</p>
+        <ul class="feat-list">
+          <li>Line-by-line explanations on demand</li>
+          <li>Concept breakdowns with real-world analogies</li>
+          <li>Hints before full answers — so you still learn</li>
+          <li>Ask follow-up questions naturally, like a chat</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="height:1px;background:var(--border);margin:4rem 0"></div>
+
+    <!-- Feature 2: Learning Paths -->
+    <div class="feat-main-grid reverse reveal">
+      <div class="feat-visual">
+        <div class="feat-tag t2">Learning Paths</div>
+        <div class="path-steps">
+          <div class="path-step">
+            <div class="path-dot done">✓</div>
+            <div class="path-info"><div class="tl-date"></div><h5>Your first variable</h5><p class="path-badge done">✓ Completed · 5 min</p></div>
+          </div>
+          <div class="path-step">
+            <div class="path-dot done">✓</div>
+            <div class="path-info"><h5>Functions & loops</h5><p class="path-badge done">✓ Completed · 20 min</p></div>
+          </div>
+          <div class="path-step">
+            <div class="path-dot curr">→</div>
+            <div class="path-info"><h5>Build a to-do app</h5><p class="path-badge curr">In progress · Est. 45 min</p></div>
+          </div>
+          <div class="path-step">
+            <div class="path-dot todo">4</div>
+            <div class="path-info"><h5>Connect to an API</h5><p class="path-badge" style="color:var(--muted)">Locked</p></div>
+          </div>
+          <div class="path-step">
+            <div class="path-dot todo">5</div>
+            <div class="path-info"><h5>Ship your first project</h5><p class="path-badge" style="color:var(--muted)">Locked</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="feat-text">
+        <div class="feat-tag t2" style="margin-bottom:1.2rem">Guided Paths</div>
+        <h3>A clear road from zero to builder</h3>
+        <p>Not a random collection of tutorials. A structured path that takes you from "what even is coding?" to shipping real projects — with every step unlocking the next.</p>
+        <ul class="feat-list">
+          <li>Web Dev, Python, and more paths</li>
+          <li>Adaptive pacing — go fast or slow, your call</li>
+          <li>Milestone projects at every stage</li>
+          <li>Certificate on completion</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="height:1px;background:var(--border);margin:4rem 0"></div>
+
+    <!-- Feature 3: Deploy -->
+    <div class="feat-main-grid reveal">
+      <div class="feat-visual">
+        <div class="feat-tag t3">One-Click Deploy</div>
+        <div class="deploy-mock">
+          <div class="deploy-row"><span class="deploy-icon">📦</span><span class="deploy-text">Building project...</span><span class="deploy-status ds-done">Done</span></div>
+          <div class="deploy-row"><span class="deploy-icon">🔍</span><span class="deploy-text">Running checks...</span><span class="deploy-status ds-done">Done</span></div>
+          <div class="deploy-row"><span class="deploy-icon">🚀</span><span class="deploy-text">Uploading to servers...</span><span class="deploy-status ds-run">Live</span></div>
+          <div class="deploy-url">🌐 my-todo-app.vibecode.app — Share this!</div>
+        </div>
+      </div>
+      <div class="feat-text">
+        <div class="feat-tag t3" style="margin-bottom:1.2rem">Instant Deploy</div>
+        <h3>From code to the internet in one click</h3>
+        <p>No servers to set up. No domain to configure. No confusing deployment docs. Press deploy, get a real URL, share your work with anyone in the world. That's it.</p>
+        <ul class="feat-list">
+          <li>Instant public URL for every project</li>
+          <li>Custom domains on Pro plan</li>
+          <li>Automatic HTTPS & CDN</li>
+          <li>Version history — roll back anytime</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="height:1px;background:var(--border);margin:4rem 0"></div>
+
+    <!-- Feature 4: Collab -->
+    <div class="feat-main-grid reverse reveal">
+      <div class="feat-visual">
+        <div class="feat-tag t4">Live Collab</div>
+        <div class="collab-mock">
+          <div class="collab-avatars">
+            <div class="collab-av" style="background:rgba(198,241,53,0.15);color:var(--lime)">A</div>
+            <div class="collab-av" style="background:rgba(77,159,255,0.15);color:var(--blue)">M</div>
+            <div class="collab-av" style="background:rgba(255,77,159,0.15);color:var(--pink)">K</div>
+          </div>
+          <div class="collab-status"><em>3 people</em> coding together right now</div>
+          <div class="collab-cursors">
+            <div class="ccursor c1">▎ Ayo</div>
+            <div class="ccursor c2">▎ Mia</div>
+            <div class="ccursor c3">▎ Kofi</div>
+          </div>
+          <div style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted)">Mia is typing on line 14...</div>
+        </div>
+      </div>
+      <div class="feat-text">
+        <div class="feat-tag t4" style="margin-bottom:1.2rem">Collaboration</div>
+        <h3>You were never meant to learn alone</h3>
+        <p>Code together in real time with friends, classmates, or a mentor. See their cursor, their changes, their thinking. Learning is faster when it's social.</p>
+        <ul class="feat-list">
+          <li>Real-time multiplayer editing</li>
+          <li>Mentor mode — guided code review</li>
+          <li>Community pair-programming sessions</li>
+          <li>Share a session link — no accounts needed for guests</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- All features grid -->
+  <section class="all-features">
+    <div class="section-wrap">
+      <div class="section-label reveal">Everything included</div>
+      <h2 class="section-title reveal">Every feature, at a glance.</h2>
+      <div class="af-grid reveal">
+        <div class="af-card"><div class="af-emoji">🌐</div><div class="af-name">12+ Languages</div><div class="af-desc">JS, Python, HTML/CSS, Go, Rust and more.</div></div>
+        <div class="af-card"><div class="af-emoji">🎨</div><div class="af-name">Theme Editor</div><div class="af-desc">Make the IDE yours with custom themes.</div></div>
+        <div class="af-card"><div class="af-emoji">🧪</div><div class="af-name">Built-in Testing</div><div class="af-desc">Run tests without any extra setup.</div></div>
+        <div class="af-card"><div class="af-emoji">📱</div><div class="af-name">Mobile-Friendly</div><div class="af-desc">Code from your tablet or phone too.</div></div>
+        <div class="af-card"><div class="af-emoji">🔒</div><div class="af-name">Private Projects</div><div class="af-desc">Keep your work private until you're ready.</div></div>
+        <div class="af-card"><div class="af-emoji">🗃️</div><div class="af-name">GitHub Sync</div><div class="af-desc">Push to GitHub with one click.</div></div>
+        <div class="af-card"><div class="af-emoji">📊</div><div class="af-name">Progress Tracking</div><div class="af-desc">See how far you've come on your dashboard.</div></div>
+        <div class="af-card"><div class="af-emoji">🌙</div><div class="af-name">Dark Mode (obviously)</div><div class="af-desc">We'd never ship without it.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="logo">vibe<em style="color:var(--lime)">code</em></span>
+        <p>A platform built for anyone brave enough to start.</p>
+      </div>
+      <div class="footer-col"><h4>Product</h4><ul><li><a onclick="showPage('features')">Features</a></li><li><a onclick="showPage('pricing')">Pricing</a></li><li><a>Roadmap</a></li></ul></div>
+      <div class="footer-col"><h4>Company</h4><ul><li><a onclick="showPage('about')">About</a></li><li><a onclick="showPage('community')">Community</a></li></ul></div>
+      <div class="footer-col"><h4>Legal</h4><ul><li><a>Privacy</a></li><li><a>Terms</a></li></ul></div>
+    </div>
+    <div class="footer-bottom"><span>© 2026 VibeCode Inc.</span><span>Built by Ayo, with love.</span></div>
+  </footer>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE: PRICING
+══════════════════════════════════════ -->
+<div class="page" id="page-pricing">
+  <div class="page-hero" style="position:relative;overflow:hidden;text-align:center">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="section-wrap">
+      <div class="section-label">Pricing</div>
+      <h1 class="section-title" style="margin:0 auto;max-width:18ch">Simple pricing.<br>No surprises.</h1>
+      <p class="section-sub" style="margin:1rem auto 0">Start free. Upgrade when you're ready. No credit card required to get going.</p>
+      <div class="pricing-toggle">
+        <span class="toggle-label active" id="monthly-label">Monthly</span>
+        <div class="toggle-switch" id="billing-toggle" onclick="toggleBilling()"><div class="toggle-thumb"></div></div>
+        <span class="toggle-label" id="annual-label">Annual</span>
+        <span class="save-badge" id="save-badge" style="display:none">Save 30%</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-wrap" style="padding:0 2rem 6rem">
+    <div class="pricing-grid">
+      <!-- Free -->
+      <div class="pricing-card">
+        <div class="plan-name">Free</div>
+        <div class="plan-price">
+          <span class="plan-currency">$</span>
+          <span class="plan-amount" id="free-price">0</span>
+        </div>
+        <div class="plan-period">forever free</div>
+        <div class="plan-desc">Perfect for getting started. Everything you need to build your first projects and start learning.</div>
+        <div class="plan-features">
+          <div class="pf-item"><span class="pf-check">✓</span>3 active projects</div>
+          <div class="pf-item"><span class="pf-check">✓</span>Browser-based IDE</div>
+          <div class="pf-item"><span class="pf-check">✓</span>AI Assistant (50 requests/day)</div>
+          <div class="pf-item"><span class="pf-check">✓</span>2 learning paths</div>
+          <div class="pf-item"><span class="pf-check">✓</span>Community access</div>
+          <div class="pf-item"><span class="pf-check">✓</span>1-click deploy</div>
+          <div class="pf-item"><span class="pf-x" style="color:var(--muted)">✗</span><span style="color:var(--muted)">Custom domains</span></div>
+          <div class="pf-item"><span class="pf-x" style="color:var(--muted)">✗</span><span style="color:var(--muted)">Live collaboration</span></div>
+        </div>
+        <button class="plan-btn plan-btn-ghost">Get started free</button>
+      </div>
+
+      <!-- Pro -->
+      <div class="pricing-card featured">
+        <div class="featured-badge">Most Popular</div>
+        <div class="plan-name">Pro</div>
+        <div class="plan-price">
+          <span class="plan-currency">$</span>
+          <span class="plan-amount" id="pro-price">12</span>
+        </div>
+        <div class="plan-period" id="pro-period">per month</div>
+        <div class="plan-desc">For serious learners building toward a career. Unlimited AI, all paths, collab tools, and priority support.</div>
+        <div class="plan-features">
+          <div class="pf-item"><span class="pf-check">✓</span>Unlimited projects</div>
+          <div class="pf-item"><span class="pf-check">✓</span>Unlimited AI Assistant</div>
+          <div class="pf-item"><span class="pf-check">✓</span>All learning paths</div>
+          <div class="pf-item"><span class="pf-check">✓</span>Live collaboration</div>
+          <div class="pf-item"><span class="pf-check">✓</span>Custom domains</div>
+          <div class="pf-item"><span class="pf-check">✓</span>GitHub sync</div>
+          <div class="pf-item"><span class="pf-check">✓</span>Priority support</div>
+          <div class="pf-item"><span class="pf-check">✓</span>Completion certificates</div>
+        </div>
+        <button class="plan-btn plan-btn-primary">Start Pro — free for 14 days</button>
+      </div>
+
+      <!-- Team -->
+      <div class="pricing-card">
+        <div class="plan-name">Team / School</div>
+        <div class="plan-price">
+          <span class="plan-currency">$</span>
+          <span class="plan-amount" id="team-price">8</span>
+        </div>
+        <div class="plan-period" id="team-period">per seat/month</div>
+        <div class="plan-desc">For bootcamps, schools, and teams. Admin dashboard, shared workspaces, and bulk billing.</div>
+        <div class="plan-features">
+          <div class="pf-item"><span class="pf-check">✓</span>Everything in Pro</div>
+          <div class="pf-item"><span class="pf-check">✓</span>Admin dashboard</div>
+          <div class="pf-item"><span class="pf-check">✓</span>Shared workspaces</div>
+          <div class="pf-item"><span class="pf-check">✓</span>Student progress tracking</div>
+          <div class="pf-item"><span class="pf-check">✓</span>Custom learning paths</div>
+          <div class="pf-item"><span class="pf-check">✓</span>SSO & SAML</div>
+          <div class="pf-item"><span class="pf-check">✓</span>Dedicated support</div>
+          <div class="pf-item"><span class="pf-check">✓</span>Minimum 5 seats</div>
+        </div>
+        <button class="plan-btn plan-btn-ghost">Contact us</button>
+      </div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="pricing-faq">
+      <div class="section-label">Pricing FAQ</div>
+      <h2 class="section-title" style="margin-bottom:0">Common questions</h2>
+      <div class="faq-grid">
+        <div class="faq-item"><div class="faq-q">Do I need a credit card to start?</div><div class="faq-a">No. The free tier is completely free, forever. No card required. We only ask for payment if you decide to upgrade to Pro.</div></div>
+        <div class="faq-item"><div class="faq-q">Can I cancel anytime?</div><div class="faq-a">Yes, absolutely. No lock-ins, no cancellation fees. Cancel from your dashboard in seconds and you won't be charged again.</div></div>
+        <div class="faq-item"><div class="faq-q">Is there a student discount?</div><div class="faq-a">Yes! Students get 50% off Pro with a valid .edu email address. Just sign up and apply the student discount in your account settings.</div></div>
+        <div class="faq-item"><div class="faq-q">What happens to my projects if I downgrade?</div><div class="faq-a">Your projects stay safe. If you exceed the free plan limits, you can view and export them — you just can't create new ones until you're within the limit.</div></div>
+        <div class="faq-item"><div class="faq-q">Do you offer refunds?</div><div class="faq-a">Yes. If you're unhappy within 30 days of any paid plan, we'll refund you fully. No questions asked.</div></div>
+        <div class="faq-item"><div class="faq-q">Can I use VibeCode for my bootcamp or school?</div><div class="faq-a">Absolutely. Our Team plan was built with schools and bootcamps in mind. Reach out and we'll set you up with a custom demo.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand"><span class="logo">vibe<em style="color:var(--lime)">code</em></span><p>Simple pricing for everyone learning to code.</p></div>
+      <div class="footer-col"><h4>Product</h4><ul><li><a onclick="showPage('features')">Features</a></li><li><a onclick="showPage('pricing')">Pricing</a></li></ul></div>
+      <div class="footer-col"><h4>Company</h4><ul><li><a onclick="showPage('about')">About</a></li><li><a onclick="showPage('community')">Community</a></li></ul></div>
+      <div class="footer-col"><h4>Legal</h4><ul><li><a>Privacy</a></li><li><a>Terms</a></li></ul></div>
+    </div>
+    <div class="footer-bottom"><span>© 2026 VibeCode Inc.</span><span>Built by Ayo, with love.</span></div>
+  </footer>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE: ABOUT
+══════════════════════════════════════ -->
+<div class="page" id="page-about">
+  <div class="page-hero" style="position:relative;overflow:hidden">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="section-wrap">
+      <div class="section-label">About VibeCode</div>
+      <h1 class="section-title" style="max-width:18ch">Built from the feeling<br>of being lost.</h1>
+      <p class="section-sub">This isn't a startup idea on a whiteboard. It came from a real moment of overwhelm — and the question: "why isn't there something better?"</p>
+    </div>
+  </div>
+
+  <section class="founder-section">
+    <div class="founder-wrap">
+      <!-- Sticky card -->
+      <div>
+        <div class="founder-card">
+          <div class="founder-avatar">A</div>
+          <div class="founder-name">Ayo</div>
+          <div class="founder-title">Founder & Builder, VibeCode</div>
+          <div class="founder-bio-short">Developer. Former beginner. Still learning. Building the platform I wish existed when I started.</div>
+          <div class="founder-links">
+            <a class="founder-link">𝕏 Twitter</a>
+            <a class="founder-link">in LinkedIn</a>
+            <a class="founder-link">✉ Email</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Story -->
+      <div class="founder-story">
+        <div class="story-block reveal">
+          <div class="story-year">The beginning</div>
+          <h3>I remember the exact feeling.</h3>
+          <p>It was late. I had three browser tabs open, a half-finished YouTube tutorial paused on my screen, and I had absolutely no idea what I was doing. Everyone seemed to assume I already understood things I'd never been taught. The tools expected me to know what a "terminal" was before I could even say hello world.</p>
+          <p>I got overwhelmed. Closed the laptop. Convinced myself coding just "wasn't for me."</p>
+        </div>
+
+        <div class="story-block reveal">
+          <div class="pull-quote">"I figured — wouldn't it just be easier to have a platform that does all of this for me? That meets you where you are, not where it thinks you should be."</div>
+        </div>
+
+        <div class="story-block reveal">
+          <div class="story-year">The realisation</div>
+          <h3>I came back. And I made it through.</h3>
+          <p>Eventually I did learn. I put in the hours, figured out the confusing bits, googled my way through a hundred error messages. And I became a developer. But the whole time I kept thinking: this shouldn't be this hard for people who are just starting out.</p>
+          <p>There are incredible AI tools now. There are platforms for learning. But they all feel like they were designed by developers, for developers. The assumed knowledge is still there. The friction is still there. The feeling of being lost — still there.</p>
+        </div>
+
+        <div class="story-block reveal">
+          <div class="story-year">Why VibeCode</div>
+          <h3>This is the platform I needed.</h3>
+          <p>VibeCode isn't about building yet another coding tool. It's about removing the barrier of entry entirely. A place where a complete beginner can open their laptop, start building something real, and never feel like they walked into the wrong room.</p>
+          <p>No setup. No assumed knowledge. An AI that explains things like a patient friend, not a Stack Overflow answer. A community where asking "what even is a function?" is welcomed, not mocked. Real projects, real skills, real confidence.</p>
+          <p>If you ever felt that feeling — of wanting to learn but not knowing where the door even is — this was built for you.</p>
+        </div>
+
+        <div class="story-block reveal">
+          <div class="story-year">What I believe</div>
+          <h3>Coding isn't hard. The entry point is.</h3>
+          <p>I genuinely believe that almost anyone can learn to code — and that the reason most people give up isn't intelligence, it's the tools. When tools assume you already know things, they filter people out. VibeCode is designed to filter nobody out.</p>
+          <p>I'm building this in public, learning as I go, and I want to hear from you. If you have a story like mine — or a different one — let's talk.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Values -->
+  <section class="values-section">
+    <div class="section-wrap">
+      <div class="section-label reveal">What we stand for</div>
+      <h2 class="section-title reveal">Our values aren't a slide deck.<br>They're decisions.</h2>
+      <div class="values-grid">
+        <div class="value-card reveal">
+          <div class="value-num">01</div>
+          <div class="value-title">Beginners first, always.</div>
+          <div class="value-desc">Every decision — every UI choice, every AI prompt, every piece of copy — is filtered through one question: would this confuse someone who's never coded before?</div>
+        </div>
+        <div class="value-card reveal">
+          <div class="value-num">02</div>
+          <div class="value-title">Explain, don't just solve.</div>
+          <div class="value-desc">Giving someone an answer they don't understand isn't helping them — it's delaying the problem. We're obsessed with making sure you actually learn, not just move forward.</div>
+        </div>
+        <div class="value-card reveal">
+          <div class="value-num">03</div>
+          <div class="value-title">No shame, no gatekeeping.</div>
+          <div class="value-desc">There are no dumb questions here. The coding world has an intimidation problem. We don't. Ask anything, at any level, and you'll be met with patience.</div>
+        </div>
+        <div class="value-card reveal">
+          <div class="value-num">04</div>
+          <div class="value-title">Real skills, not certificates.</div>
+          <div class="value-desc">We care about you being able to build real things, not just completing courses. Every lesson leads to something you can show someone.</div>
+        </div>
+        <div class="value-card reveal">
+          <div class="value-num">05</div>
+          <div class="value-title">Build in public.</div>
+          <div class="value-desc">We share our roadmap, our mistakes, and our progress openly. We're building this alongside our community, not behind closed doors.</div>
+        </div>
+        <div class="value-card reveal">
+          <div class="value-num">06</div>
+          <div class="value-title">Accessible to everyone.</div>
+          <div class="value-desc">Geography and background shouldn't determine who gets to learn tech. Our free tier is generous by design, and student discounts exist because we mean it.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Roadmap timeline -->
+  <section class="timeline-section">
+    <div class="section-wrap">
+      <div class="section-label reveal">Roadmap</div>
+      <h2 class="section-title reveal">Where we are. Where we're going.</h2>
+      <div class="timeline">
+        <div class="tl-item reveal"><div class="tl-dot done">✓</div><div class="tl-content"><div class="tl-date">Q4 2025</div><h4>Beta launch</h4><p>First 500 users onboarded. Core IDE, AI assistant, and 2 learning paths live.</p></div></div>
+        <div class="tl-item reveal"><div class="tl-dot done">✓</div><div class="tl-content"><div class="tl-date">Q1 2026</div><h4>Community & deploy</h4><p>Community forum, project showcase, and one-click deploy shipped.</p></div></div>
+        <div class="tl-item reveal"><div class="tl-dot curr">→</div><div class="tl-content"><div class="tl-date">Q2 2026</div><h4>Live collab & mobile</h4><p>Real-time pair coding, mentor sessions, and mobile-friendly IDE.</p></div></div>
+        <div class="tl-item reveal"><div class="tl-dot next">◦</div><div class="tl-content"><div class="tl-date">Q3 2026</div><h4>School / Team plan</h4><p>Admin dashboards, custom learning paths, and bootcamp partnerships.</p></div></div>
+        <div class="tl-item reveal"><div class="tl-dot next">◦</div><div class="tl-content"><div class="tl-date">2027</div><h4>Job board & hiring</h4><p>Connect VibeCode graduates directly with companies looking for junior devs.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand"><span class="logo">vibe<em style="color:var(--lime)">code</em></span><p>Built from a personal story. Built for everyone.</p></div>
+      <div class="footer-col"><h4>Product</h4><ul><li><a onclick="showPage('features')">Features</a></li><li><a onclick="showPage('pricing')">Pricing</a></li></ul></div>
+      <div class="footer-col"><h4>Company</h4><ul><li><a onclick="showPage('about')">About</a></li><li><a onclick="showPage('community')">Community</a></li></ul></div>
+      <div class="footer-col"><h4>Legal</h4><ul><li><a>Privacy</a></li><li><a>Terms</a></li></ul></div>
+    </div>
+    <div class="footer-bottom"><span>© 2026 VibeCode Inc.</span><span>Built by Ayo, with love.</span></div>
+  </footer>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE: COMMUNITY
+══════════════════════════════════════ -->
+<div class="page" id="page-community">
+  <div class="page-hero" style="position:relative;overflow:hidden">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="section-wrap">
+      <div class="section-label">Community</div>
+      <h1 class="section-title" style="max-width:18ch">You're not learning alone.<br>Not here.</h1>
+      <p class="section-sub">VibeCode is more than a tool. It's a community of people who were once confused, overwhelmed, and brave enough to start anyway.</p>
+      <div style="margin-top:2rem;display:flex;gap:1rem;flex-wrap:wrap">
+        <button class="btn-primary">Join the community →</button>
+        <button class="btn-ghost">See what's happening</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-wrap" style="padding:0 2rem">
+    <div class="community-stats">
+      <div class="cs-card reveal"><div class="cs-num"><em>2.4</em>k</div><div class="cs-label">Members worldwide</div></div>
+      <div class="cs-card reveal"><div class="cs-num"><em>140</em>+</div><div class="cs-label">Projects shipped</div></div>
+      <div class="cs-card reveal"><div class="cs-num"><em>38</em></div><div class="cs-label">Countries represented</div></div>
+      <div class="cs-card reveal"><div class="cs-num"><em>12</em></div><div class="cs-label">Weekly live sessions</div></div>
+    </div>
+  </div>
+
+  <!-- Channels -->
+  <section class="channels-section">
+    <div class="section-wrap">
+      <div class="section-label reveal">Where to find us</div>
+      <h2 class="section-title reveal">Every kind of conversation<br>has a home here.</h2>
+      <div class="channels-grid">
+        <div class="channel-card reveal">
+          <div class="ch-icon">💬</div>
+          <div class="ch-name">#general</div>
+          <div class="ch-desc">Introduce yourself, share what you're working on, or just say hi. No question is too small here.</div>
+          <div class="ch-count"><em>840</em> members · Most active</div>
+        </div>
+        <div class="channel-card reveal">
+          <div class="ch-icon">🆘</div>
+          <div class="ch-name">#help-me</div>
+          <div class="ch-desc">Stuck on something? Post your code, describe the problem, and the community (+ AI) will help you unstuck.</div>
+          <div class="ch-count"><em>620</em> members · 24/7 active</div>
+        </div>
+        <div class="channel-card reveal">
+          <div class="ch-icon">🎉</div>
+          <div class="ch-name">#wins</div>
+          <div class="ch-desc">Ship something? Fixed a bug that's been haunting you? Share it. Every win here gets celebrated, big or small.</div>
+          <div class="ch-count"><em>700</em> members · High energy</div>
+        </div>
+        <div class="channel-card reveal">
+          <div class="ch-icon">🛠️</div>
+          <div class="ch-name">#projects</div>
+          <div class="ch-desc">Show off what you're building, get early feedback, find collaborators, or just inspire others with your progress.</div>
+          <div class="ch-count"><em>510</em> members</div>
+        </div>
+        <div class="channel-card reveal">
+          <div class="ch-icon">💼</div>
+          <div class="ch-name">#career-talk</div>
+          <div class="ch-desc">Job searching, portfolio advice, interview prep, and stories from people who made the switch. Real talk only.</div>
+          <div class="ch-count"><em>390</em> members</div>
+        </div>
+        <div class="channel-card reveal">
+          <div class="ch-icon">🧠</div>
+          <div class="ch-name">#deep-dives</div>
+          <div class="ch-desc">Long-form discussions, concept breakdowns, and the "but why does it work that way?" conversations.</div>
+          <div class="ch-count"><em>280</em> members</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Project Showcase -->
+  <section class="showcase-section">
+    <div class="section-wrap">
+      <div class="section-label reveal">Member showcase</div>
+      <h2 class="section-title reveal">Real projects from real beginners.</h2>
+      <div class="showcase-grid">
+        <div class="showcase-card reveal">
+          <div class="sc-preview" style="background:linear-gradient(135deg,rgba(198,241,53,0.1),rgba(77,159,255,0.1))">🌤️</div>
+          <div class="sc-info">
+            <div class="sc-title">WeatherNow</div>
+            <div class="sc-author">by Mia T. · 3 weeks on VibeCode</div>
+            <div class="sc-tags"><span class="sc-tag">HTML/CSS</span><span class="sc-tag">JavaScript</span><span class="sc-tag">API</span></div>
+          </div>
+        </div>
+        <div class="showcase-card reveal">
+          <div class="sc-preview" style="background:linear-gradient(135deg,rgba(255,77,159,0.1),rgba(255,140,66,0.1))">📝</div>
+          <div class="sc-info">
+            <div class="sc-title">Daily Habit Tracker</div>
+            <div class="sc-author">by Kofi A. · 5 weeks on VibeCode</div>
+            <div class="sc-tags"><span class="sc-tag">React</span><span class="sc-tag">LocalStorage</span></div>
+          </div>
+        </div>
+        <div class="showcase-card reveal">
+          <div class="sc-preview" style="background:linear-gradient(135deg,rgba(77,159,255,0.1),rgba(255,77,159,0.1))">🎮</div>
+          <div class="sc-info">
+            <div class="sc-title">Snake Game</div>
+            <div class="sc-author">by Sara J. · 7 weeks on VibeCode</div>
+            <div class="sc-tags"><span class="sc-tag">JavaScript</span><span class="sc-tag">Canvas</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Events -->
+  <section class="events-section">
+    <div class="section-wrap">
+      <div class="section-label reveal">Upcoming events</div>
+      <h2 class="section-title reveal">Live sessions every week.</h2>
+      <div class="events-list">
+        <div class="event-item reveal">
+          <div class="event-date"><div class="event-month">Mar</div><div class="event-day">04</div></div>
+          <div class="event-info"><h4>Beginner Bootcamp: Build your first webpage</h4><p>Live session · Hosted by Ayo · 60 min · All levels welcome</p></div>
+          <div class="event-badge"><span class="ev-type ev-live">● Live</span></div>
+        </div>
+        <div class="event-item reveal">
+          <div class="event-date"><div class="event-month">Mar</div><div class="event-day">07</div></div>
+          <div class="event-info"><h4>Career Chat: How I got my first dev job</h4><p>Panel discussion · 3 guest speakers · 90 min</p></div>
+          <div class="event-badge"><span class="ev-type ev-live">● Live</span></div>
+        </div>
+        <div class="event-item reveal">
+          <div class="event-date"><div class="event-month">Mar</div><div class="event-day">11</div></div>
+          <div class="event-info"><h4>Code Review Friday: Submit your project</h4><p>Weekly · Community code review · Open submission</p></div>
+          <div class="event-badge"><span class="ev-type ev-live">● Live</span></div>
+        </div>
+        <div class="event-item reveal">
+          <div class="event-date"><div class="event-month">Mar</div><div class="event-day">14</div></div>
+          <div class="event-info"><h4>Deep Dive: How the internet actually works</h4><p>Recorded after · Great for complete beginners</p></div>
+          <div class="event-badge"><span class="ev-type ev-rec">⏺ Recorded</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Community CTA -->
+  <section class="community-cta">
+    <div class="section-label">Join us</div>
+    <h2 class="cta-h" style="font-size:clamp(2rem,5vw,4rem);letter-spacing:-0.04em">The community is free.<br><span style="color:var(--lime)">Always.</span></h2>
+    <p class="cta-sub" style="margin-bottom:2.5rem">No paid gating. No exclusive Discord tiers. If you're learning to code, you belong here.</p>
+    <button class="btn-primary">Join VibeCode Community →</button>
+  </section>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand"><span class="logo">vibe<em style="color:var(--lime)">code</em></span><p>38 countries. 1 mission. No one codes alone.</p></div>
+      <div class="footer-col"><h4>Product</h4><ul><li><a onclick="showPage('features')">Features</a></li><li><a onclick="showPage('pricing')">Pricing</a></li></ul></div>
+      <div class="footer-col"><h4>Company</h4><ul><li><a onclick="showPage('about')">About</a></li><li><a onclick="showPage('community')">Community</a></li></ul></div>
+      <div class="footer-col"><h4>Legal</h4><ul><li><a>Privacy</a></li><li><a>Terms</a></li></ul></div>
+    </div>
+    <div class="footer-bottom"><span>© 2026 VibeCode Inc.</span><span>Built by Ayo, with love.</span></div>
+  </footer>
+</div>
+
+<!-- ── SCRIPTS ── -->
+<script>
+// ── PAGE ROUTING ──
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  const navEl = document.getElementById('nav-' + name);
+  if (navEl) navEl.classList.add('active');
+  window.scrollTo(0,0);
+  // trigger reveals on newly visible page
+  setTimeout(initReveals, 50);
+}
+
+// ── SCROLL REVEAL ──
+function initReveals() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal:not(.visible)').forEach(el => observer.observe(el));
+}
+initReveals();
+
+// ── BILLING TOGGLE ──
+let isAnnual = false;
+function toggleBilling() {
+  isAnnual = !isAnnual;
+  const toggle = document.getElementById('billing-toggle');
+  const mLabel = document.getElementById('monthly-label');
+  const aLabel = document.getElementById('annual-label');
+  const badge  = document.getElementById('save-badge');
+
+  toggle.classList.toggle('on', isAnnual);
+  mLabel.classList.toggle('active', !isAnnual);
+  aLabel.classList.toggle('active', isAnnual);
+  badge.style.display = isAnnual ? 'inline-block' : 'none';
+
+  document.getElementById('pro-price').textContent  = isAnnual ? '8'  : '12';
+  document.getElementById('team-price').textContent = isAnnual ? '6'  : '8';
+  document.getElementById('pro-period').textContent  = isAnnual ? 'per month, billed annually' : 'per month';
+  document.getElementById('team-period').textContent = isAnnual ? 'per seat/month, billed annually' : 'per seat/month';
+}
+</script>
+</body>
+</html>
