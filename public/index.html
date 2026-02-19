@@ -733,7 +733,7 @@ footer {
   <section class="home-cta">
     <h2 class="cta-h reveal">Ready to start<br><span style="color:var(--lime)">building?</span></h2>
     <p class="cta-sub reveal">Join the beta. First 500 users get lifetime Pro — free.</p>
-    <form class="email-row reveal" onsubmit="event.preventDefault(); this.innerHTML='<div style=\'color:var(--lime);font-family:DM Mono,monospace;padding:1rem\'>✓ You\'re on the list! We\'ll be in touch.</div>'">
+    <form class="email-row reveal" onsubmit="submitWaitlist(event, this)">
       <input class="email-in" type="email" placeholder="your@email.com" required>
       <button type="submit" class="btn-primary">Join waitlist</button>
     </form>
@@ -1401,6 +1401,43 @@ function initReveals() {
   document.querySelectorAll('.reveal:not(.visible)').forEach(el => observer.observe(el));
 }
 initReveals();
+
+
+// ── WAITLIST FORM ──
+async function submitWaitlist(e, form) {
+  e.preventDefault()
+  const input = form.querySelector('input[type="email"]')
+  const btn   = form.querySelector('button[type="submit"]')
+  const email = input.value.trim()
+  btn.textContent = 'Joining...'
+  btn.disabled = true
+  input.disabled = true
+  try {
+    const res  = await fetch('/api/waitlist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    })
+    const data = await res.json()
+    if (res.ok && data.success) {
+      form.innerHTML = '<div style="text-align:center;padding:1rem 0"><div style="font-size:2rem;margin-bottom:0.5rem">🎉</div><div style="color:var(--lime);font-family:DM Mono,monospace;font-size:0.95rem;font-weight:600">You\'re on the list!</div><div style="color:var(--muted2);font-family:DM Mono,monospace;font-size:0.78rem;margin-top:0.4rem">Check your inbox for a welcome email from Ayo.</div></div>'
+    } else {
+      throw new Error(data.error || 'Something went wrong')
+    }
+  } catch (err) {
+    btn.textContent = 'Join waitlist'
+    btn.disabled = false
+    input.disabled = false
+    let errEl = form.querySelector('.form-error')
+    if (!errEl) {
+      errEl = document.createElement('div')
+      errEl.className = 'form-error'
+      errEl.style.cssText = "width:100%;text-align:center;font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--pink);margin-top:0.5rem"
+      form.appendChild(errEl)
+    }
+    errEl.textContent = err.message || 'Something went wrong. Please try again.'
+  }
+}
 
 // ── BILLING TOGGLE ──
 let isAnnual = false;

@@ -1,0 +1,9 @@
+{
+  "name": "vibecode-landing",
+  "version": "1.0.0",
+  "description": "VibeCode waitlist landing page",
+  "private": true,
+  "engines": {
+    "node": "18.x"
+  }
+}
