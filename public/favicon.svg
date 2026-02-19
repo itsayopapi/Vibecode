@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- Dark background -->
+  <rect width="32" height="32" rx="8" fill="#080810"/>
+  
+  <!-- Lime green "V" mark -->
+  <path d="M6 8 L13 24 L16 18 L19 24 L26 8" 
+        fill="none" 
+        stroke="#c6f135" 
+        stroke-width="3" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"/>
+  
+  <!-- Cursor blink dot -->
+  <rect x="22" y="21" width="3" height="4" rx="1" fill="#c6f135" opacity="0.9"/>
+</svg>
